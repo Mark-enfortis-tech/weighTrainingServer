@@ -1,6 +1,6 @@
 {
   "name": "training_server",
-  "version": "0.0.2",
+  "version": "0.0.0",
   "description": "Weight Training Server",
   "main": "index.js",
   "scripts": {
