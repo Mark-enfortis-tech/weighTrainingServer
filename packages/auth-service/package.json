@@ -1,0 +1,16 @@
+{
+  "name": "auth-service",
+  "version": "0.0.0",
+  "description": "authentication service",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "mark saunders",
+  "email": "mark.saunders@voyagertechnologies.com",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}
