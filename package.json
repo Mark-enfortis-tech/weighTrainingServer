@@ -1,25 +1,79 @@
 {
-  "name": "training_server",
+  "name": "training-server-root",
   "version": "0.0.0",
+  "main": "packages/app/src/main.js",
+  "author": "Enfortis Technologies",
   "description": "Weight Training Server",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "dev": "concurrently -n http-server,auth-service -c blue,green \"yarn workspace http-server start\"  \"yarn workspace auth-service start\"",
+    "start": "electron-forge start",
+    "prodtest": "cross-env NODE_ENV=production electron-forge start",
+    "make": "electron-forge make"
   },
-  "author": "mark saunders",
-  "email" : "mark@enfortistechnologies.com",
-  "displayName": "Enfortis",
-  "license": "ISC",
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
-    "cookie-parser": "^1.4.6",
-    "debug": "^4.3.6",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "http-errors": "^2.0.0",
-    "mongodb": "^6.8.0",
-    "mongoose": "^8.5.4",
-    "morgan": "^1.10.0",
-    "nodemon": "^3.1.4"
+    "array-flatten": "^3.0.0",
+    "bcryptjs": "^3.0.2",
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
+    "loadash": "^1.0.0",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "@electron-forge/maker-squirrel": "^6.0.0",
+    "@electron-forge/maker-zip": "^6.0.0",
+    "concurrently": "^9.1.2",
+    "electron": "^36.0.0",
+    "electron-forge": "^5.2.4",
+    "electron-prebuilt-compile": "8.2.0",
+    "lerna": "^8.1.9"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "path/to/icon",
+        "prune": true,
+        "appBundleId": "com.example.app",
+        "appCategoryType": "public.app-category.utilities",
+        "extraMetadata": {
+          "author": "Enfortis Technologies",
+          "description": "Weight Training Server"
+        },
+        "extraResources": [
+          {
+            "from": "packages",
+            "to": "packages"
+          }
+        ],
+        "ignore": [
+          "node_modules/auth-service",
+          "node_modules/http-server"
+        ]
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "VServer",
+            "loadingGif": "./path/to/loading.gif",
+            "iconUrl": "./path/to/icon.ico",
+            "certificateFile": "./path/to/certificate.pfx",
+            "certificatePassword": "your_password"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "config": {
+            "platforms": [
+              "win32"
+            ]
+          }
+        }
+      ]
+    }
   }
 }
