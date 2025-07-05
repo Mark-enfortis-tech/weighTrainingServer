@@ -1,5 +1,5 @@
 {
-  "name": "training_server",
+  "name": "server",
   "version": "0.0.0",
   "description": "Weight Training Server",
   "main": "index.js",
@@ -21,5 +21,8 @@
     "mongoose": "^8.5.4",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.4"
+  },
+  "devDependencies": {
+  "lerna": "6.6.2"
   }
 }

@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 
 var path = require('path');
 
-const fetchServerConfigs = require('../server/controllers/configController');
+// const fetchServerConfigs = require('../server/controllers/configController');
 
 
 
@@ -46,27 +46,33 @@ app.use(express.json());
 
 
 // start initialization
-let HTTPS_PORT = null;
+let HTTPS_PORT = 443;
 (async () => {
   console.log("loading configuration...");
   try {
 
+    console.log("configuration complete, starting auth service... ");
     const retVal = await initializeApp();
-
-    if (retVal) {
-      // continue
-      console.log("configuration complete, starting auth service... ");
 
       // Start HTTPS server
       https.createServer(options, app).listen(HTTPS_PORT, () => {
         console.log(`Auth service is running on https://localhost:${HTTPS_PORT}`);
       });
 
-    } else {
-      // handle missing config case
-      console.log('unable to load configurations');
-      process.exit(1);
-    }
+    // if (retVal) {
+    //   // continue
+    //   console.log("configuration complete, starting auth service... ");
+
+    //   // Start HTTPS server
+    //   https.createServer(options, app).listen(HTTPS_PORT, () => {
+    //     console.log(`Auth service is running on https://localhost:${HTTPS_PORT}`);
+    //   });
+
+    // } else {
+    //   // handle missing config case
+    //   console.log('unable to load configurations');
+    //   process.exit(1);
+    // }
   } catch (err) {
     console.error('App initialization failed', err);
     process.exit(1);
@@ -83,9 +89,6 @@ let HTTPS_PORT = null;
 //   console.log('DB connection successful')
 // });
 
-
-
-
 async function initializeApp() {
   console.log("starting index.js");
   console.log("running inializeApp()");;
@@ -94,12 +97,10 @@ async function initializeApp() {
   let DB = null;
 
   if (process.env.NODE_ENV === 'development') {
-    DB = process.env.VCTRDB_NO_AUTH;  // e.g. "mongodb://127.0.0.1:27017/vctrDB"
+    DB = process.env.WTDB_NO_AUTH;  // e.g. "mongodb://127.0.0.1:27017/vctrDB"
   } else {
-    DB = process.env.VCTRDB.replace('<PASSWORD>', process.env.VCTRDB_PASSWORD);
+    DB = process.env.WTDB.replace('<PASSWORD>', process.env.WTDB_PASSWORD);
   }
-
-
 
   console.log('DB connection string:', DB);
 
@@ -111,17 +112,17 @@ async function initializeApp() {
     throw err; // rethrow if you want to stop app startup
   }
 
-  const config = await fetchServerConfigs(); // returns a single object or null
+  // const config = await fetchServerConfigs(); // returns a single object or null
 
-  if (config) {
-    HTTPS_PORT = config.https_port;
-    console.log(`Configuration set:, HTTPS_PORT: ${HTTPS_PORT}`);
-    console.log(`Auth-service started, waiting for client login on port: ${HTTPS_PORT}`);
-    return true; // export this or whatever you want
-  } else {
-    console.error('No configs found in database');
-    return false;
-  }
+  // if (config) {
+  //   HTTPS_PORT = config.https_port;
+  //   console.log(`Configuration set:, HTTPS_PORT: ${HTTPS_PORT}`);
+  //   console.log(`Auth-service started, waiting for client login on port: ${HTTPS_PORT}`);
+  //   return true; // export this or whatever you want
+  // } else {
+  //   console.error('No configs found in database');
+  //   return false;
+  // }
 }
 
 // Signup route (admin-only access)

@@ -10,14 +10,13 @@ var logger = require('morgan');
 require('dotenv').config();
 
 const mongoose = require('mongoose');
-const router = require('./packages/httpServer/routes/cmdInvRoutes');
-const platformRouter = require('./packages/httpServer/routes/platformRoutes');
-const userStatsRouter = require('./packages/httpServer/routes/userStatsRoutes');
-const cmdHistRouter = require('./packages/httpServer/routes/cmdHistRoutes');
+const trainingRouter = require('./routes/eventRoutes')
 
-const ConfigHist = require('./models/configHistModel');
-const ConfigInv = require('./models/configInvModel');
-const fetchServerConfigs = require('./packages/httpServer/controllers/configController');
+
+
+// const ConfigHist = require('./models/configHistModel');
+// const ConfigInv = require('./models/configInvModel');
+// const fetchServerConfigs = require('./packages/httpServer/controllers/configController');
 
 
 console.log(`node environment: ${process.env.NODE_ENV}`);
@@ -27,9 +26,9 @@ console.log(`PID: ${process.pid}`);
 let DB = null;
 
 if (process.env.NODE_ENV === 'development') {
-  DB = process.env.VCTRDB_NO_AUTH;  // e.g. "mongodb://127.0.0.1:27017/vctrDB"
+  DB = process.env.WTDB_NO_AUTH;  // e.g. "mongodb://127.0.0.1:27017/vctrDB"
 } else {
-  DB = process.env.VCTRDB.replace('<PASSWORD>', process.env.VCTRDB_PASSWORD);
+  DB = process.env.WTDB.replace('<PASSWORD>', process.env.WTDB_PASSWORD);
 }
 
 
@@ -40,7 +39,7 @@ mongoose.connect(DB, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch(err => console.error('DB connection error:', err));
 
 // fetch configuration from mongo
-let HTTP_PORT = null;
+let HTTP_PORT = 80;
 
 
 
@@ -57,7 +56,7 @@ async function main() {
 
   // Start the rest of the server logic here
 
-    console.log(`HTTP server started, waiting for messages on port: ${PORT_HTTP}`);
+    console.log(`HTTP server started, waiting for messages on port: ${HTTP_PORT}`);
 
     process.on('uncaughtException', err => {
       console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
@@ -76,8 +75,8 @@ async function main() {
         app.use(express.urlencoded({ extended: false }));
         app.use(cookieParser());
         app.use(express.static(path.join(__dirname, 'public')));
-        app.listen(PORT_HTTP, () => {
-            console.log(`Server is listening on port ${PORT_HTTP}`);
+        app.listen(HTTP_PORT, () => {
+            console.log(`Server is listening on port ${HTTP_PORT}`);
         });
 
         // 1 middleware
@@ -88,7 +87,7 @@ async function main() {
 
         // 2 mount routers
         app.use('/training', trainingRouter);
-;
+
 
         // catch 404 and forward to error handler
         app.use(function(req, res, next) {

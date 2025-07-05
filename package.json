@@ -6,7 +6,7 @@
   "description": "Weight Training Server",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n http-server,auth-service -c blue,green \"yarn workspace http-server start\"  \"yarn workspace auth-service start\"",
+    "dev": "concurrently -n server,auth-service -c blue,green \"yarn workspace server start\"  \"yarn workspace auth-service start\"",
     "start": "electron-forge start",
     "prodtest": "cross-env NODE_ENV=production electron-forge start",
     "make": "electron-forge make"
@@ -20,8 +20,7 @@
     "express": "^5.1.0",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
-    "loadash": "^1.0.0",
-    "ws": "^8.18.2"
+    "loadash": "^1.0.0"
   },
   "devDependencies": {
     "@electron-forge/maker-squirrel": "^6.0.0",
@@ -30,7 +29,7 @@
     "electron": "^36.0.0",
     "electron-forge": "^5.2.4",
     "electron-prebuilt-compile": "8.2.0",
-    "lerna": "^8.1.9"
+    "lerna": "^6.6.2"
   },
   "config": {
     "forge": {
@@ -51,7 +50,7 @@
         ],
         "ignore": [
           "node_modules/auth-service",
-          "node_modules/http-server"
+          "node_modules/server"
         ]
       },
       "makers": [
