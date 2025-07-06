@@ -120,23 +120,23 @@ async function initializeApp() {
 
 // Signup route (admin-only access)
 app.post('/signup', async (req, res) => {
-  const { username, password } = req.body;
-  console.log(`auth-service new user signup attempt for ${username}`);
+  const { userName, password } = req.body;
+  console.log(`auth-service new user signup attempt for ${userName}`);
 
-  if (!username || !password) {
-    return res.status(400).send('Username and password are required');
+  if (!userName || !password) {
+    return res.status(400).send('userName and password are required');
   }
 
-  const existingUser = await UserAuth.findOne({ user_name: username });
+  const existingUser = await UserAuth.findOne({ userName: userName });
   if (existingUser) {
-    return res.status(400).send('Username already exists');
+    return res.status(400).send('userName already exists');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new UserAuth({ user_name: username, password: hashedPassword });
+  const newUser = new UserAuth({ user_name: userName, password: hashedPassword });
   await newUser.save();
 
-  console.log(`auth-service new user ${username} signed up`);
+  console.log(`auth-service new user ${userName} signed up`);
   res.status(201).send('User created successfully');
 });
 
@@ -145,20 +145,20 @@ app.post('/signup', async (req, res) => {
 
 // Login route
 app.post('/login', async (req, res) => {
-  const { username, password} = req.body;
-  console.log(`auth-service login attempt from ${username}`);
+  const { userName, password} = req.body;
+  console.log(`auth-service login attempt from ${userName}`);
 
-  const user = await UserAuth.findOne({ user_name: username });
-  if (!user) return res.status(400).send('Invalid username');
+  const user = await UserAuth.findOne({ user_name: userName });
+  if (!user) return res.status(400).send('Invalid userName');
 
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(400).send('Incorrect password');
 
-  const payload = { username };
+  const payload = { userName };
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  console.log(`auth-service user ${username} logged in, tokens transmitted`);
+  console.log(`auth-service user ${userName} logged in, tokens transmitted`);
   const userRole = user.role;
   console.log(`user role: ${userRole}`);
   
@@ -177,7 +177,7 @@ app.post('/token', (req, res) => {
 
     refreshTokens.delete(refreshToken); // Rotate the token
 
-    const payload = { username: user.username };
+    const payload = { userName: user.userName };
     const newAccessToken = generateAccessToken(payload);
 
     let newRefreshToken = refreshToken;
@@ -194,12 +194,12 @@ app.post('/token', (req, res) => {
 
 // Change Password route
 app.post('/change-password',  async (req, res) => {
-  const { username, password } = req.body;
-  console.log(`auth-service change password attempt from ${username} `);
+  const { userName, password } = req.body;
+  console.log(`auth-service change password attempt from ${userName} `);
 
-  const user = await UserAuth.findOne({ user_name: username });
+  const user = await UserAuth.findOne({ user_name: userName });
   if (!user) {
-    return res.status(400).send('Invalid username');
+    return res.status(400).send('Invalid userName');
   }
 
   const match = await bcrypt.compare(password, user.password);
@@ -211,7 +211,7 @@ app.post('/change-password',  async (req, res) => {
   user.password = hashedNewPassword;
   await user.save();
 
-  console.log(`auth-service user ${username} password changed`);
+  console.log(`auth-service user ${userName} password changed`);
 
   res.send('Password changed successfully');
 });
