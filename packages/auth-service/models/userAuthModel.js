@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const userAuthSchema = new mongoose.Schema({
-  user_name: {
+  userName: {
     type: String,
-    required: [true, 'Must include a user_name']
+    required: [true, 'Must include a userName']
   },
-  user_id: {
+  userId: {
     type: Number,
     unique: true // ensures no duplicates
   },
@@ -19,9 +19,9 @@ const userAuthSchema = new mongoose.Schema({
  * Pre-save hook to auto-generate a unique user_id starting from 1000.
  */
 userAuthSchema.pre('save', async function (next) {
-  if (!this.user_id) {
-    const lastEntry = await mongoose.model('userAuthModel').findOne().sort('-user_id').exec();
-    this.user_id = lastEntry ? lastEntry.user_id + 1 : 1000;
+  if (!this.userId) {
+    const lastEntry = await mongoose.model('userAuthModel').findOne().sort('-userId').exec();
+    this.userId = lastEntry ? lastEntry.userId + 1 : 1000;
   }
   next();
 });
