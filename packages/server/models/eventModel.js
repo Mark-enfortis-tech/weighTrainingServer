@@ -31,6 +31,13 @@ const eventSchema = new mongoose.Schema({
   },
 }, { collection: 'eventCollection' });
 
+// Pre-save hook to strip time from date
+eventSchema.pre('save', function (next) {
+  if (this.date instanceof Date) {
+    this.date.setHours(0, 0, 0, 0);
+  }
+  next();
+});
 
 const EventData = mongoose.model('eventModel', eventSchema);
 module.exports = EventData;

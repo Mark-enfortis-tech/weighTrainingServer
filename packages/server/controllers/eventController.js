@@ -1,5 +1,4 @@
 const express = require('express');
-const TrainingModel = require('../../auth-service/models/userAuthModel');
 
 const http = require('http');
 const app = express();
@@ -8,13 +7,9 @@ app.use(bodyParser.json());
 
 const path = require('path');
 const { error } = require('console');
-require('dotenv').config({ path: path.resolve(__dirname, '../../../config.env') });
-
-
 
 // controllers/eventController.js
 const EventData = require('../models/eventModel');
-
 
 // get events by by user and date
 const getEventsByUserAndDate = async (req, res) => {
@@ -50,7 +45,6 @@ const getEventsByUserAndDate = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 // create new event
 const createEvent = async (req, res) => {
@@ -94,24 +88,41 @@ const createEvent = async (req, res) => {
 // update event fields - actualReps and/or weight
 const updateEventFields = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { weight, actualReps } = req.body;
+    const { user_id, date, exerType, set, actualReps, weight } = req.body;
 
-    if (weight === undefined && actualReps === undefined) {
-      return res.status(400).json({ message: 'At least one of weight or actualReps must be provided' });
+    // Validate identifying fields
+    if (!user_id || !date || !exerType || set === undefined) {
+      return res.status(400).json({ message: 'Missing required identifying fields: user_id, date, exerType, set' });
     }
 
-    const updatedEvent = await EventData.findByIdAndUpdate(
-      id,
+    // At least one of the fields to update must be present
+    if (actualReps === undefined && weight === undefined) {
+      return res.status(400).json({ message: 'At least one of actualReps or weight must be provided' });
+    }
+
+    // Normalize date to start of day range
+    const day = new Date(date);
+    const startOfDay = new Date(day.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(day.setHours(23, 59, 59, 999));
+
+    // Build dynamic update object
+    const updateFields = {};
+    if (actualReps !== undefined) updateFields.actualReps = actualReps;
+    if (weight !== undefined) updateFields.weight = weight;
+
+    const updatedEvent = await EventData.findOneAndUpdate(
       {
-        ...(weight !== undefined && { weight }),
-        ...(actualReps !== undefined && { actualReps })
+        user_id: parseInt(user_id),
+        date: { $gte: startOfDay, $lte: endOfDay },
+        exerType,
+        set: parseInt(set)
       },
-      { new: true } // Return updated document
+      updateFields,
+      { new: true }
     );
 
     if (!updatedEvent) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: 'Event not found for given user/date/exercise/set' });
     }
 
     res.status(200).json(updatedEvent);
@@ -122,38 +133,46 @@ const updateEventFields = async (req, res) => {
 };
 
 
-// delete events by user_id and date
-const deleteEventsByUserAndDate = async (req, res) => {
-  try {
-    const { user_id, date } = req.query;
 
-    if (!user_id || !date) {
-      return res.status(400).json({ message: 'Missing user_id or date' });
+
+// delete event
+const deleteEvent = async (req, res) => {
+  try {
+    const { user_id, date, exerType, set } = req.query;
+
+    // Validate required query params
+    if (!user_id || !date || !exerType || set === undefined) {
+      return res.status(400).json({
+        message: 'Missing required fields: user_id, date, exerType, or set'
+      });
     }
 
     const userIdNum = parseInt(user_id);
+    const setNum = parseInt(set);
     const day = new Date(date);
 
-    if (isNaN(userIdNum) || isNaN(day.getTime())) {
-      return res.status(400).json({ message: 'Invalid user_id or date format' });
+    if (isNaN(userIdNum) || isNaN(setNum) || isNaN(day.getTime())) {
+      return res.status(400).json({ message: 'Invalid user_id, set, or date format' });
     }
 
-    // Match full day
+    // Match exact date (range from 00:00 to 23:59:59)
     const startOfDay = new Date(day.setHours(0, 0, 0, 0));
     const endOfDay = new Date(day.setHours(23, 59, 59, 999));
 
-    const result = await EventData.deleteMany({
+    const result = await EventData.deleteOne({
       user_id: userIdNum,
-      date: { $gte: startOfDay, $lte: endOfDay }
+      date: { $gte: startOfDay, $lte: endOfDay },
+      exerType,
+      set: setNum
     });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'No matching events found to delete' });
+      return res.status(404).json({ message: 'No matching event found to delete' });
     }
 
-    res.status(200).json({ message: `${result.deletedCount} event(s) deleted` });
+    res.status(200).json({ message: 'Event deleted successfully' });
   } catch (error) {
-    console.error('Error deleting events:', error);
+    console.error('Error deleting event:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -161,8 +180,9 @@ const deleteEventsByUserAndDate = async (req, res) => {
 
 
 
+
 module.exports = {
-  getEventsByUserAndDate, createEvent, updateEventFields, deleteEventsByUserAndDate,
+  getEventsByUserAndDate, createEvent, updateEventFields, deleteEvent,
 };
 
 

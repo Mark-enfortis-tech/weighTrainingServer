@@ -5,18 +5,15 @@ const morgan = require('morgan');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-// require('dotenv').config({ path: path.resolve(__dirname, '../../config.env') });
-// const HTTP_PORT = process.env.PORT_HTTP;
-require('dotenv').config();
+
+require('dotenv').config({ path: path.resolve(__dirname, 'config.env') });
 
 const mongoose = require('mongoose');
-const trainingRouter = require('./routes/eventRoutes')
+const eventRouter = require('./routes/eventRoutes')
 
+const JWT_SECRET = process.env.JWT_SECRET;
 
-
-// const ConfigHist = require('./models/configHistModel');
-// const ConfigInv = require('./models/configInvModel');
-// const fetchServerConfigs = require('./packages/httpServer/controllers/configController');
+console.log('JWT_SECRET: ', JWT_SECRET);
 
 
 console.log(`node environment: ${process.env.NODE_ENV}`);
@@ -40,9 +37,6 @@ mongoose.connect(DB, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // fetch configuration from mongo
 let HTTP_PORT = 80;
-
-
-
 
 async function main() {
 
@@ -86,7 +80,7 @@ async function main() {
         }
 
         // 2 mount routers
-        app.use('/training', trainingRouter);
+        app.use('/events', eventRouter);
 
 
         // catch 404 and forward to error handler

@@ -10,20 +10,13 @@ const mongoose = require('mongoose');
 
 var path = require('path');
 
-// const fetchServerConfigs = require('../server/controllers/configController');
-
-
-
-
-// TODO: for ease of testing put in file config:
-// const path = require('path');
-// require('dotenv').config({ path: path.resolve(__dirname, '../../config.env') });
-// const HTTPS_PORT = process.env.PORT_HTTPS;
-// console.log(`starting up auth-service port ${HTTPS_PORT}`)
+require('dotenv').config({ path: path.resolve(__dirname, '../server/config.env') });
 
 
 // Private key for signing JWT
-const JWT_SECRET = 'your_jwt_secret_key'; // Use an env variable or a secure vault in production
+const JWT_SECRET = process.env.JWT_SECRET;
+
+console.log('JWT_SECRET: ', JWT_SECRET);
 
 // Sign Up route
 const UserAuth = require('./models/userAuthModel'); // Adjust the path as needed
@@ -32,8 +25,8 @@ const { removeListener } = require('process');
 console.log(`PID: ${process.pid}`);
 
 
-// const TTL_accessToken = '1h';
-const TTL_accessToken = '2m';
+const TTL_accessToken = '1h';
+// const TTL_accessToken = '2m';
 // const TTL_refreshToken = '7d';
 const TTL_refreshToken = '9h';
 
