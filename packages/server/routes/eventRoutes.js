@@ -11,4 +11,10 @@ router
   .delete(verifyToken, eventController.deleteEvent)
   .patch(verifyToken, eventController.updateEventFields)
 
+
+// NEW route for date range event fetch
+router
+  .route('/range')
+  .get(verifyToken, eventController.getEventsByUserAndDateRange);
+
 module.exports = router;

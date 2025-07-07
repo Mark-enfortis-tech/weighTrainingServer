@@ -4,7 +4,7 @@ const fs = require('fs');
 const https = require('https');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { userAuth} = require('./models/userAuthModel');
+// const { userAuth} = require('./models/userAuthModel');
 const { verifyToken } = require('./tokenUtils');  // Import only the token function
 const mongoose = require('mongoose');
 
@@ -19,7 +19,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 console.log('JWT_SECRET: ', JWT_SECRET);
 
 // Sign Up route
-const UserAuth = require('./models/userAuthModel'); // Adjust the path as needed
+const UserAuth = require('./models/userAuthModel'); // Adjust the path as neededdel');
 const { removeListener } = require('process');
 
 console.log(`PID: ${process.pid}`);
@@ -120,11 +120,11 @@ async function initializeApp() {
 
 // Signup route (admin-only access)
 app.post('/signup', async (req, res) => {
-  const { userName, password } = req.body;
+  const { userName, password, userRole } = req.body;
   console.log(`auth-service new user signup attempt for ${userName}`);
 
-  if (!userName || !password) {
-    return res.status(400).send('userName and password are required');
+  if (!userName || !password || !userRole) {
+    return res.status(400).send('userName, password, and userRole are required');
   }
 
   const existingUser = await UserAuth.findOne({ userName: userName });
@@ -133,10 +133,10 @@ app.post('/signup', async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new UserAuth({ user_name: userName, password: hashedPassword });
+  const newUser = new UserAuth({ userName, password: hashedPassword, userRole });
   await newUser.save();
 
-  console.log(`auth-service new user ${userName} signed up`);
+  console.log(`auth-service new user ${userName} signed up with role ${userRole}`);
   res.status(201).send('User created successfully');
 });
 
@@ -145,10 +145,10 @@ app.post('/signup', async (req, res) => {
 
 // Login route
 app.post('/login', async (req, res) => {
-  const { userName, password} = req.body;
+  const { userName, password } = req.body;
   console.log(`auth-service login attempt from ${userName}`);
 
-  const user = await UserAuth.findOne({ user_name: userName });
+  const user = await UserAuth.findOne({ userName: userName });
   if (!user) return res.status(400).send('Invalid userName');
 
   const match = await bcrypt.compare(password, user.password);
@@ -158,12 +158,36 @@ app.post('/login', async (req, res) => {
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
+  const { userId, userRole } = user;
+
   console.log(`auth-service user ${userName} logged in, tokens transmitted`);
-  const userRole = user.role;
-  console.log(`user role: ${userRole}`);
+  console.log(`userId: ${userId}, userRole: ${userRole}`);
   
-  res.json({ accessToken, refreshToken, userRole });
+  res.json({ accessToken, refreshToken, userId, userRole });
 });
+
+
+
+// app.post('/login', async (req, res) => {
+//   const { userName, password} = req.body;
+//   console.log(`auth-service login attempt from ${userName}`);
+
+//   const user = await UserAuth.findOne({ userName: userName });
+//   if (!user) return res.status(400).send('Invalid userName');
+
+//   const match = await bcrypt.compare(password, user.password);
+//   if (!match) return res.status(400).send('Incorrect password');
+
+//   const payload = { userName };
+//   const accessToken = generateAccessToken(payload);
+//   const refreshToken = generateRefreshToken(payload);
+
+//   console.log(`auth-service user ${userName} logged in, tokens transmitted`);
+//   const userRole = user.userRole;
+//   console.log(`user role: ${userRole}`);
+  
+//   res.json({ accessToken, refreshToken, userRole });
+// });
 
 // Token refresh endpoint
 app.post('/token', (req, res) => {
